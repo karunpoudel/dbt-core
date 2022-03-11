@@ -9,7 +9,7 @@ import dbt.flags as flags
 from dbt.config.runtime import RuntimeConfig
 from dbt.adapters.factory import get_adapter, register_adapter, reset_adapters
 from dbt.events.functions import setup_event_logger
-from dbt.tests.util import write_file, run_sql_with_adapter
+from dbt.tests.util import write_file, run_sql_with_adapter, TestProcessingException
 
 
 # These are the fixtures that are used in dbt core functional tests
@@ -62,37 +62,55 @@ def test_data_dir(request):
     return os.path.join(request.fspath.dirname, "data")
 
 
+@pytest.fixture(scope="session")
+def dbt_profile_target(request):
+    adapter_type = request.config.getoption("--adapter")
+    if adapter_type == "redshift":
+        target = redshift_target()
+    else:  # default is postgres
+        target = postgres_target()
+    return target
+
+
+def postgres_target():
+    return {
+        "type": "postgres",
+        "threads": 4,
+        "host": "localhost",
+        "port": int(os.getenv("POSTGRES_TEST_PORT", 5432)),
+        "user": os.getenv("POSTGRES_TEST_USER", "root"),
+        "pass": os.getenv("POSTGRES_TEST_PASS", "password"),
+        "dbname": os.getenv("POSTGRES_TEST_DATABASE", "dbt"),
+    }
+
+
+def redshift_target():
+    return {
+        "type": "redshift",
+        "threads": 1,
+        "host": os.getenv("REDSHIFT_TEST_HOST"),
+        "port": int(os.getenv("REDSHIFT_TEST_PORT")),
+        "user": os.getenv("REDSHIFT_TEST_USER"),
+        "pass": os.getenv("REDSHIFT_TEST_PASS"),
+        "dbname": os.getenv("REDSHIFT_TEST_DBNAME"),
+    }
+
+
 # The profile dictionary, used to write out profiles.yml
 @pytest.fixture(scope="class")
-def dbt_profile_data(unique_schema):
+def dbt_profile_data(unique_schema, dbt_profile_target):
     profile = {
         "config": {"send_anonymous_usage_stats": False},
         "test": {
             "outputs": {
-                "default": {
-                    "type": "postgres",
-                    "threads": 4,
-                    "host": "localhost",
-                    "port": int(os.getenv("POSTGRES_TEST_PORT", 5432)),
-                    "user": os.getenv("POSTGRES_TEST_USER", "root"),
-                    "pass": os.getenv("POSTGRES_TEST_PASS", "password"),
-                    "dbname": os.getenv("POSTGRES_TEST_DATABASE", "dbt"),
-                    "schema": unique_schema,
-                },
-                "other_schema": {
-                    "type": "postgres",
-                    "threads": 4,
-                    "host": "localhost",
-                    "port": int(os.getenv("POSTGRES_TEST_PORT", 5432)),
-                    "user": "noaccess",
-                    "pass": "password",
-                    "dbname": os.getenv("POSTGRES_TEST_DATABASE", "dbt"),
-                    "schema": unique_schema + "_alt",  # Should this be the same unique_schema?
-                },
+                "default": {},
             },
             "target": "default",
         },
     }
+    target = dbt_profile_target
+    target["schema"] = unique_schema
+    profile["test"]["outputs"]["default"] = target
     return profile
 
 
@@ -189,6 +207,8 @@ def write_project_files(project_root, dir_name, file_dict):
 
 # Write files out from file_dict. Can be nested directories...
 def write_project_files_recursively(path, file_dict):
+    if type(file_dict) is not dict:
+        raise TestProcessingException(f"Error creating {path}. Did you forget the file extension?")
     for name, value in file_dict.items():
         if name.endswith(".sql") or name.endswith(".csv") or name.endswith(".md"):
             write_file(value, path, name)
