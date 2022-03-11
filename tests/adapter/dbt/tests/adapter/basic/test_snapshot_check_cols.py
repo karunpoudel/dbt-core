@@ -3,6 +3,7 @@ from dbt.tests.util import run_dbt, update_rows, relation_from_name
 from dbt.tests.adapter.basic.files import (
     seeds_base_csv,
     seeds_added_csv,
+    schema_seed_added_yml,
     cc_all_snapshot_sql,
     cc_date_snapshot_sql,
     cc_name_snapshot_sql,
@@ -25,6 +26,7 @@ class BaseSnapshotCheckCols:
         return {
             "base.csv": seeds_base_csv,
             "added.csv": seeds_added_csv,
+            "seeds.yml": schema_seed_added_yml,
         }
 
     @pytest.fixture(scope="class")
@@ -90,7 +92,7 @@ class BaseSnapshotCheckCols:
             "clause": {
                 "src_col": "name",
                 "type": "add_string",
-                "value": "_updated",
+                "value": "X",
             },
             "where": "id < 11",
         }

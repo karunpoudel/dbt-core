@@ -4,6 +4,7 @@ from dbt.tests.adapter.basic.files import (
     seeds_base_csv,
     seeds_newcolumns_csv,
     seeds_added_csv,
+    schema_seed_added_yml,
     ts_snapshot_sql,
 )
 
@@ -21,6 +22,7 @@ class BaseSnapshotTimestamp:
             "base.csv": seeds_base_csv,
             "newcolumns.csv": seeds_newcolumns_csv,
             "added.csv": seeds_added_csv,
+            "seeds.yml": schema_seed_added_yml,
         }
 
     @pytest.fixture(scope="class")

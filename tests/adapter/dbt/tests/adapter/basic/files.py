@@ -53,6 +53,15 @@ sources:
         identifier: "{{ var('seed_name', 'base') }}"
 """
 
+schema_seed_added_yml = """
+version: 2
+seeds:
+  - name: added
+    config:
+      column_types:
+        name: varchar(64)
+"""
+
 generic_test_seed_yml = """
 version: 2
 models:
