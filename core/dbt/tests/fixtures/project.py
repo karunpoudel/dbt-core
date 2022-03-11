@@ -352,8 +352,7 @@ def project(
         shared_data_dir=shared_data_dir,
         test_data_dir=test_data_dir,
         test_schema=unique_schema,
-        # the following feels kind of fragile. TODO: better way of getting database
-        database=profiles_yml["test"]["outputs"]["default"]["dbname"],
+        database=adapter.config.credentials.database,
     )
     project.run_sql("drop schema if exists {schema} cascade")
     project.run_sql("create schema {schema}")
