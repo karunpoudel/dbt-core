@@ -62,17 +62,8 @@ def test_data_dir(request):
     return os.path.join(request.fspath.dirname, "data")
 
 
-@pytest.fixture(scope="session")
-def dbt_profile_target(request):
-    adapter_type = request.config.getoption("--adapter")
-    if adapter_type == "redshift":
-        target = redshift_target()
-    else:  # default is postgres
-        target = postgres_target()
-    return target
-
-
-def postgres_target():
+@pytest.fixture(scope="class")
+def dbt_profile_target():
     return {
         "type": "postgres",
         "threads": 4,
@@ -81,18 +72,6 @@ def postgres_target():
         "user": os.getenv("POSTGRES_TEST_USER", "root"),
         "pass": os.getenv("POSTGRES_TEST_PASS", "password"),
         "dbname": os.getenv("POSTGRES_TEST_DATABASE", "dbt"),
-    }
-
-
-def redshift_target():
-    return {
-        "type": "redshift",
-        "threads": 1,
-        "host": os.getenv("REDSHIFT_TEST_HOST"),
-        "port": int(os.getenv("REDSHIFT_TEST_PORT")),
-        "user": os.getenv("REDSHIFT_TEST_USER"),
-        "pass": os.getenv("REDSHIFT_TEST_PASS"),
-        "dbname": os.getenv("REDSHIFT_TEST_DBNAME"),
     }
 
 
