@@ -390,8 +390,11 @@ class GraphRunnableTask(ManifestTask):
         for dep_node_id in self.graph.get_dependent_nodes(node_id):
             self._skipped_children[dep_node_id] = cause
 
-    def populate_adapter_cache(self, adapter):
-        adapter.set_relations_cache(self.manifest)
+    def populate_adapter_cache(self, adapter, required_schemas: Set[BaseRelation] = None):
+        if flags.SELECTED_SCHEMA_CACHE is True:
+            adapter.set_relations_cache(self.manifest, required_schemas=required_schemas)
+        else:
+            adapter.set_relations_cache(self.manifest)
 
     def before_hooks(self, adapter):
         pass
@@ -489,8 +492,7 @@ class GraphRunnableTask(ManifestTask):
 
         return result
 
-    def create_schemas(self, adapter, selected_uids: Iterable[str]):
-        required_schemas = self.get_model_schemas(adapter, selected_uids)
+    def create_schemas(self, adapter, required_schemas: Set[BaseRelation]):
         # we want the string form of the information schema database
         required_databases: Set[BaseRelation] = set()
         for required in required_schemas:
