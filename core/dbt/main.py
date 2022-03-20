@@ -1086,23 +1086,23 @@ def parse_args(args, cls=DBTArgumentParser):
 
     schema_cache_flag = p.add_mutually_exclusive_group()
     schema_cache_flag.add_argument(
-        '--selected-schema-cache',
-        action='store_const',
+        "--cache_selected_only",
+        action="store_const",
         const=True,
         default=None,
-        dest='selected_schema_cache',
-        help='''
-        Pre cache objects of schema relevant to selected resource only.
-        '''
+        dest="cache_selected_only",
+        help="""
+        Pre cache database objects relevant to selected resource only.
+        """
     )
     schema_cache_flag.add_argument(
-        '--no-selected-schema-cache',
-        action='store_const',
+        "--no-cache_selected_only",
+        action="store_const",
         const=False,
-        dest='selected_schema_cache',
-        help='''
-        Pre cache objects of all schema.
-        '''
+        dest="cache_selected_only",
+        help="""
+        Pre cache all database objects related to the project.
+        """
     )
 
     subs = p.add_subparsers(title="Available sub-commands")
