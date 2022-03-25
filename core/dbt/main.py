@@ -1097,7 +1097,7 @@ def parse_args(args, cls=DBTArgumentParser):
         dest="cache_selected_only",
         help="""
         Pre cache database objects relevant to selected resource only.
-        """
+        """,
     )
     schema_cache_flag.add_argument(
         "--no-cache_selected_only",
@@ -1106,7 +1106,7 @@ def parse_args(args, cls=DBTArgumentParser):
         dest="cache_selected_only",
         help="""
         Pre cache all database objects related to the project.
-        """
+        """,
     )
 
     subs = p.add_subparsers(title="Available sub-commands")
