@@ -1262,6 +1262,10 @@ class ProviderContext(ManifestContext):
             )
         return self.adapter.submit_python_job(parsed_model, compiled_code)
 
+    @contextproperty
+    def macros(self) -> Dict[str, Any]:
+        return self.manifest.macros
+
 
 class MacroContext(ProviderContext):
     """Internally, macros can be executed like nodes, with some restrictions:
