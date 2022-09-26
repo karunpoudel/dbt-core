@@ -590,6 +590,16 @@ def _add_common_selector_arguments(sub):
         type=Path,
         default=flags.ARTIFACT_STATE_PATH,
     )
+    sub.add_argument(
+        "--macro-state-in-respective-node",
+        action='store_const',
+        const=True,
+        default=None,
+        help="""
+        To be used with --state argument. If set, read the macro's state from 'dependent_macro_state' field in the
+        respective resource node.
+        """
+    )
 
 
 def _add_selection_arguments(*subparsers):

@@ -37,6 +37,7 @@ EVENT_BUFFER_SIZE = 100000
 QUIET = None
 NO_PRINT = None
 CACHE_SELECTED_ONLY = None
+MACRO_STATE_IN_RESPECTIVE_NODE = None
 
 _NON_BOOLEAN_FLAGS = [
     "LOG_FORMAT",
@@ -71,6 +72,7 @@ flag_defaults = {
     "QUIET": False,
     "NO_PRINT": False,
     "CACHE_SELECTED_ONLY": False,
+    "MACRO_STATE_IN_RESPECTIVE_NODE": False,
 }
 
 
@@ -121,6 +123,7 @@ def set_from_args(args, user_config):
     global WRITE_JSON, PARTIAL_PARSE, USE_COLORS, STORE_FAILURES, PROFILES_DIR, DEBUG, LOG_FORMAT
     global INDIRECT_SELECTION, VERSION_CHECK, FAIL_FAST, SEND_ANONYMOUS_USAGE_STATS
     global PRINTER_WIDTH, WHICH, LOG_CACHE_EVENTS, EVENT_BUFFER_SIZE, QUIET, NO_PRINT, CACHE_SELECTED_ONLY
+    global MACRO_STATE_IN_RESPECTIVE_NODE
 
     STRICT_MODE = False  # backwards compatibility
     # cli args without user_config or env var option
@@ -148,6 +151,7 @@ def set_from_args(args, user_config):
     QUIET = get_flag_value("QUIET", args, user_config)
     NO_PRINT = get_flag_value("NO_PRINT", args, user_config)
     CACHE_SELECTED_ONLY = get_flag_value("CACHE_SELECTED_ONLY", args, user_config)
+    MACRO_STATE_IN_RESPECTIVE_NODE = get_flag_value("MACRO_STATE_IN_RESPECTIVE_NODE", args, user_config)
 
     _set_overrides_from_env()
 

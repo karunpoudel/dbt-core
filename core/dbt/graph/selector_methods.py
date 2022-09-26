@@ -415,7 +415,11 @@ class StateSelectorMethod(SelectorMethod):
 
         return modified
 
-    def recursively_check_macros_modified(self, node, visited_macros):
+    def recursively_check_macros_modified(self, node, visited_macros, primary_node_uid=None):
+        # primary_node_uid is the uniquid_id of the 1st node which with this recursive function is call
+        # when a model depends on a macro and the macro depends on another macro
+        if not primary_node_uid:
+            primary_node_uid = node.unique_id
         # loop through all macros that this node depends on
         for macro_uid in node.depends_on.macros:
             # avoid infinite recursion if we've already seen this macro
@@ -423,12 +427,12 @@ class StateSelectorMethod(SelectorMethod):
                 continue
             visited_macros.append(macro_uid)
             # is this macro one of the modified macros?
-            if macro_uid in self.modified_macros:
+            if self.check_macro_modified(macro_uid, primary_node_uid):
                 return True
             # if not, and this macro depends on other macros, keep looping
             macro_node = self.manifest.macros[macro_uid]
             if len(macro_node.depends_on.macros) > 0:
-                return self.recursively_check_macros_modified(macro_node, visited_macros)
+                return self.recursively_check_macros_modified(macro_node, visited_macros, primary_node_uid)
             # this macro hasn't been modified, but we haven't checked
             # the other macros the node depends on, so keep looking
             elif len(node.depends_on.macros) > len(visited_macros):
@@ -436,23 +440,35 @@ class StateSelectorMethod(SelectorMethod):
             else:
                 return False
 
-    def check_macros_modified(self, node):
-        # check if there are any changes in macros the first time
-        if self.modified_macros is None:
-            self.modified_macros = self._macros_modified()
-        # no macros have been modified, skip looping entirely
-        if not self.modified_macros:
-            return False
-        # recursively loop through upstream macros to see if any is modified
+    def check_macro_modified(self, macro_uid, primary_node_uid) -> bool:
+        if self.previous_state.macro_state_in_respective_node is False:
+            return macro_uid in self.modified_macros
         else:
-            visited_macros = []
-            return self.recursively_check_macros_modified(node, visited_macros)
+            current_macro = self.manifest.macros[macro_uid]
+            previous_node = self.previous_state.manifest.nodes.get(primary_node_uid)
+            if previous_node:
+                previous_macro = previous_node.dependent_macro_state.get(macro_uid)
+                return not current_macro.same_contents(previous_macro)
+            return True
+
+    def check_macros_modified(self, node):
+        if self.previous_state.macro_state_in_respective_node is False:
+            # check if there are any changes in macros the first time
+            if self.modified_macros is None:
+                self.modified_macros = self._macros_modified()
+            # no macros have been modified, skip looping entirely
+            if not self.modified_macros:
+                return False
+        # recursively loop through upstream macros to see if any is modified
+        visited_macros = []
+        return self.recursively_check_macros_modified(node, visited_macros)
 
     # TODO check modifed_content and check_modified macro seems a bit redundent
     def check_modified_content(self, old: Optional[SelectorTarget], new: SelectorTarget) -> bool:
         different_contents = not new.same_contents(old)  # type: ignore
-        upstream_macro_change = self.check_macros_modified(new)
-        return different_contents or upstream_macro_change
+        if different_contents:
+            return True
+        return self.check_macros_modified(new)
 
     def check_modified_macros(self, _, new: SelectorTarget) -> bool:
         return self.check_macros_modified(new)

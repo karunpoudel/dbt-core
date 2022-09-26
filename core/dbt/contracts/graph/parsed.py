@@ -194,11 +194,66 @@ class NodeInfoMixin:
 
 
 @dataclass
+class ParsedPatch(HasYamlMetadata, Replaceable):
+    name: str
+    description: str
+    meta: Dict[str, Any]
+    docs: Docs
+    config: Dict[str, Any]
+
+
+# The parsed node update is only the 'patch', not the test. The test became a
+# regular parsed node. Note that description and columns must be present, but
+# may be empty.
+@dataclass
+class ParsedNodePatch(ParsedPatch):
+    columns: Dict[str, ColumnInfo]
+
+
+@dataclass
+class ParsedMacroPatch(ParsedPatch):
+    arguments: List[MacroArgument] = field(default_factory=list)
+
+
+@dataclass
+class ParsedMacro(UnparsedBaseNode, HasUniqueID):
+    name: str
+    macro_sql: str
+    resource_type: NodeType = field(metadata={"restrict": [NodeType.Macro]})
+    # TODO: can macros even have tags?
+    tags: List[str] = field(default_factory=list)
+    # TODO: is this ever populated?
+    depends_on: MacroDependsOn = field(default_factory=MacroDependsOn)
+    description: str = ""
+    meta: Dict[str, Any] = field(default_factory=dict)
+    docs: Docs = field(default_factory=Docs)
+    patch_path: Optional[str] = None
+    arguments: List[MacroArgument] = field(default_factory=list)
+    created_at: float = field(default_factory=lambda: time.time())
+
+    def patch(self, patch: ParsedMacroPatch):
+        self.patch_path: Optional[str] = patch.file_id
+        self.description = patch.description
+        self.created_at = time.time()
+        self.meta = patch.meta
+        self.docs = patch.docs
+        self.arguments = patch.arguments
+
+    def same_contents(self, other: Optional["ParsedMacro"]) -> bool:
+        if other is None:
+            return False
+        # the only thing that makes one macro different from another with the
+        # same name/package is its content
+        return self.macro_sql == other.macro_sql
+
+
+@dataclass
 class ParsedNodeDefaults(NodeInfoMixin, ParsedNodeMandatory):
     tags: List[str] = field(default_factory=list)
     refs: List[List[str]] = field(default_factory=list)
     sources: List[List[str]] = field(default_factory=list)
     depends_on: DependsOn = field(default_factory=DependsOn)
+    dependent_macro_state: Dict[str, ParsedMacro] = field(default_factory=dict)
     description: str = field(default="")
     columns: Dict[str, ColumnInfo] = field(default_factory=dict)
     meta: Dict[str, Any] = field(default_factory=dict)
@@ -478,60 +533,6 @@ class IntermediateSnapshotNode(ParsedNode):
 class ParsedSnapshotNode(ParsedNode):
     resource_type: NodeType = field(metadata={"restrict": [NodeType.Snapshot]})
     config: SnapshotConfig
-
-
-@dataclass
-class ParsedPatch(HasYamlMetadata, Replaceable):
-    name: str
-    description: str
-    meta: Dict[str, Any]
-    docs: Docs
-    config: Dict[str, Any]
-
-
-# The parsed node update is only the 'patch', not the test. The test became a
-# regular parsed node. Note that description and columns must be present, but
-# may be empty.
-@dataclass
-class ParsedNodePatch(ParsedPatch):
-    columns: Dict[str, ColumnInfo]
-
-
-@dataclass
-class ParsedMacroPatch(ParsedPatch):
-    arguments: List[MacroArgument] = field(default_factory=list)
-
-
-@dataclass
-class ParsedMacro(UnparsedBaseNode, HasUniqueID):
-    name: str
-    macro_sql: str
-    resource_type: NodeType = field(metadata={"restrict": [NodeType.Macro]})
-    # TODO: can macros even have tags?
-    tags: List[str] = field(default_factory=list)
-    # TODO: is this ever populated?
-    depends_on: MacroDependsOn = field(default_factory=MacroDependsOn)
-    description: str = ""
-    meta: Dict[str, Any] = field(default_factory=dict)
-    docs: Docs = field(default_factory=Docs)
-    patch_path: Optional[str] = None
-    arguments: List[MacroArgument] = field(default_factory=list)
-    created_at: float = field(default_factory=lambda: time.time())
-
-    def patch(self, patch: ParsedMacroPatch):
-        self.patch_path: Optional[str] = patch.file_id
-        self.description = patch.description
-        self.created_at = time.time()
-        self.meta = patch.meta
-        self.docs = patch.docs
-        self.arguments = patch.arguments
-
-    def same_contents(self, other: Optional["ParsedMacro"]) -> bool:
-        if other is None:
-            return False
-        # the only thing that makes one macro different from another with the
-        # same name/package is its content
-        return self.macro_sql == other.macro_sql
 
 
 @dataclass

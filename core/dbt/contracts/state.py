@@ -7,13 +7,14 @@ from dbt.exceptions import IncompatibleSchemaException
 
 
 class PreviousState:
-    def __init__(self, path: Path, current_path: Path):
+    def __init__(self, path: Path, current_path: Path, macro_state_in_respective_node: bool):
         self.path: Path = path
         self.current_path: Path = current_path
         self.manifest: Optional[WritableManifest] = None
         self.results: Optional[RunResultsArtifact] = None
         self.sources: Optional[FreshnessExecutionResultArtifact] = None
         self.sources_current: Optional[FreshnessExecutionResultArtifact] = None
+        self.macro_state_in_respective_node = macro_state_in_respective_node
 
         manifest_path = self.path / "manifest.json"
         if manifest_path.exists() and manifest_path.is_file():

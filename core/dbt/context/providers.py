@@ -1154,6 +1154,10 @@ class ProviderContext(ManifestContext):
         """
         return selected_resources.SELECTED_RESOURCES
 
+    @contextproperty
+    def macros(self) -> Dict[str, Any]:
+        return self.manifest.macros
+
 
 class MacroContext(ProviderContext):
     """Internally, macros can be executed like nodes, with some restrictions:
