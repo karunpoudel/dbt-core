@@ -232,6 +232,7 @@ REQUIRED_MACRO_KEYS = REQUIRED_QUERY_HEADER_KEYS | {
     "env",
     "graph",
     "model",
+    "macros"
     "pre_hooks",
     "post_hooks",
     "sql",
