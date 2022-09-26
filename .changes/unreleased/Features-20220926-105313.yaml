@@ -1,0 +1,7 @@
+kind: Features
+body: expose macros in Jinja context
+time: 2022-09-26T10:53:13.4911753-05:00
+custom:
+  Author: karunpoudel
+  Issue: "4949"
+  PR: "5915"
