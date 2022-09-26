@@ -220,7 +220,7 @@ class ManifestLoader:
             manifest = loader.load()
 
             _check_manifest(manifest, config)
-            manifest.build_flat_graph()
+            manifest.flatten_objects()
 
             # This needs to happen after loading from a partial parse,
             # so that the adapter has the query headers from the macro_hook.

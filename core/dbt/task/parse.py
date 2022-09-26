@@ -75,7 +75,7 @@ class ParseTask(ConfiguredTask):
             fire_event(ManifestLoaded())
             _check_manifest(manifest, root_config)
             fire_event(ManifestChecked())
-            manifest.build_flat_graph()
+            manifest.flatten_objects()
             fire_event(ManifestFlatGraphBuilt())
             loader._perf_info.load_all_elapsed = time.perf_counter() - start_load_all
 

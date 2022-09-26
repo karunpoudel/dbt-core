@@ -1264,7 +1264,7 @@ class ProviderContext(ManifestContext):
 
     @contextproperty
     def macros(self) -> Dict[str, Any]:
-        return self.manifest.macros
+        return self.manifest.flat_macros
 
 
 class MacroContext(ProviderContext):

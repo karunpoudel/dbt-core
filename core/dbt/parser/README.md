@@ -208,6 +208,10 @@ From the ManifestMetadata class. Contains dbt_schema_version, project_id, user_i
 
 Used during execution in context.common (?). Builds dictionaries of nodes and sources. Not sure why this is used instead of the original nodes and sources. Not in the written manifest.
 
+### flat_macros
+
+Used during execution in context.common (?). Builds dictionaries of macros.
+
 ### state_check
 
 This used to be in ParseResults (not committed yet). The saved version of this is compared against the current version to see if we can use the saved Manifest. Contains var_hash, profile_hash, and project_hashes, to compare to the saved Manifest to see if things have changed that would invalidate it.

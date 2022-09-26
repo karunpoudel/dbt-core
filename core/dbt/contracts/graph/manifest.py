@@ -614,6 +614,7 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
     files: MutableMapping[str, AnySourceFile] = field(default_factory=dict)
     metadata: ManifestMetadata = field(default_factory=ManifestMetadata)
     flat_graph: Dict[str, Any] = field(default_factory=dict)
+    flat_macros: Dict[str, Any] = field(default_factory=dict)
     state_check: ManifestStateCheck = field(default_factory=ManifestStateCheck)
     source_patches: MutableMapping[SourceKey, SourcePatch] = field(default_factory=dict)
     disabled: MutableMapping[str, List[GraphMemberNode]] = field(default_factory=dict)
@@ -1027,13 +1028,19 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
                 merged.add(unique_id)
                 self.nodes[unique_id] = node.replace(deferred=True)
 
-        # Rebuild the flat_graph, which powers the 'graph' context variable,
+        # Rebuild flat_graph, flat_macros which powers various context variable
         # now that we've deferred some nodes
-        self.build_flat_graph()
+        self.flatten_objects()
 
         # log up to 5 items
         sample = list(islice(merged, 5))
         fire_event(MergedFromState(nbr_merged=len(merged), sample=sample))
+
+    def flatten_objects(self):
+        # Rebuild the flat_graph, which powers the 'graph' context variable
+        self.build_flat_graph()
+        # flat_macros powers the 'macros' context variable
+        self.flat_macros = {k: v.to_dict() for k, v in self.macros.items()}
 
     # Methods that were formerly in ParseResult
 
@@ -1143,6 +1150,7 @@ class Manifest(MacroMethods, DataClassMessagePackMixin, dbtClassMixin):
             self.files,
             self.metadata,
             self.flat_graph,
+            self.flat_macros,
             self.state_check,
             self.source_patches,
             self.disabled,
@@ -1164,6 +1172,7 @@ class MacroManifest(MacroMethods):
         # This is returned by the 'graph' context property
         # in the ProviderContext class.
         self.flat_graph = {}
+        self.flat_macros = {}
 
 
 AnyManifest = Union[Manifest, MacroManifest]
