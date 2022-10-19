@@ -254,6 +254,7 @@ class UserConfig(ExtensibleDbtClassMixin, Replaceable, UserConfigContract):
     indirect_selection: Optional[str] = None
     cache_selected_only: Optional[bool] = None
     event_buffer_size: Optional[int] = None
+    macro_state_in_respective_node: Optional[bool] = None
 
 
 @dataclass

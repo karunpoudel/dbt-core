@@ -7,9 +7,12 @@ from dbt.exceptions import IncompatibleSchemaException
 
 
 class PreviousState:
-    def __init__(self, path: Path, current_path: Path):
+    def __init__(
+        self, path: Path, current_path: Path, macro_state_in_respective_node: bool = False
+    ):
         self.path: Path = path
         self.current_path: Path = current_path
+        self.macro_state_in_respective_node = macro_state_in_respective_node
         self.manifest: Optional[WritableManifest] = None
         self.results: Optional[RunResultsArtifact] = None
         self.sources: Optional[FreshnessExecutionResultArtifact] = None
