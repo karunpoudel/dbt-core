@@ -1,0 +1,7 @@
+kind: Features
+body: Option for --macro-state-in-respective-node
+time: 2022-10-18T22:16:12.4911753-05:00
+custom:
+  Author: karunpoudel
+  Issue: "5922"
+  PR: "6101"
